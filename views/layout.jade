@@ -1,0 +1,21 @@
+!!! 5
+html
+  head
+    title Hitmap
+    meta(name='viewport', content='initial-scale=1.0, user=scalable=no')
+    link(rel='stylesheet', href='/stylesheets/style.css')
+    script(src= '/socket.io/socket.io.js');
+    script(src= '/javascripts/jquery-1.6.4.min.js')
+    script(src= '/javascripts/json.js')
+    block scripts
+      script(src= 'http://maps.googleapis.com/maps/api/js?sensor=false')
+      script(src= '/javascripts/markermanager_packed.js')
+      script(src= '/javascripts/heatmap.js')
+      script(src= '/javascripts/heatmap-gmaps.js')
+      //if lt IE 9
+        script(src= '/javascripts/excanvas.js')
+      script(src= '/javascripts/jquery.flot.js')
+      script(src= '/javascripts/jquery.flot.pie.js')
+      script(src= '/javascripts/main.js')
+      script(src= 'http://www.panoramio.com/wapi/wapi.js?v=1')
+  body!= body

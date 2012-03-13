@@ -1,0 +1,33 @@
+body {
+  font: 14px "Lucida Grande", "Lucida Sans Unicode", Verdana, Arial, "Liberation Sans", sans-serif;
+}
+html { height: 100% }
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+#map_canvas { height: 100% }
+#messagewindow {
+  margin: 20px;
+/*
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px;
+*/
+  background-color: rgba(0,0,0,0.2);
+}
+/*
+#messagewindow img {
+  margin-right: 10px;
+}
+*/
+#panoramio {
+  margin: 20px;
+  margin-bottom: 110px;
+}
+#panoramio img {
+  border-radius: 5px;
+}
+#messagewindow p {
+  color: rgba(255,255,255,0.8);
+}

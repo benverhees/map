@@ -1,0 +1,196 @@
+var hitmap = {
+  bounds: null,
+  map: null,
+  mgr: null,
+//  heatmap: null,
+  data: null,
+  socket: null,
+  updateInterval: 1000,
+  plot: null,
+  timezoneoffset: null,
+}
+hitmap.init = function() {
+  var d = new Date();
+  hitmap.timezoneoffset = d.getTimezoneOffset() * 60 * 1000;
+
+  $("#map_canvas").fadeTo(1, 0.2);
+
+  var myLatlng = new google.maps.LatLng(32, 5);
+  var myOptions = {
+    zoom: 3,
+    center: myLatlng,
+    mapTypeId: google.maps.MapTypeId.ROADMAP,
+    styles: 
+    [
+      {
+        stylers: [
+          { visibility: "off" }
+        ]
+      },{
+        featureType: "water",
+        elementType: "geometry",
+        stylers: [
+          { visibility: "on" },
+          { saturation: -100 },
+          { lightness: 40 }
+        ]
+      },{
+        featureType: "administrative",
+        elementType: "labels",
+        stylers: [
+          { visibility: "off" }
+        ]
+      },{
+        featureType: "administrative",
+        elementType: "geometry",
+        stylers: [
+          { visibility: "on" },
+          { saturation: -100 },
+          { lightness: 75 }
+        ]
+      },{
+        featureType: "landscape",
+        stylers: [
+          { lightness: 100 }
+        ]
+      }
+    ]
+  }
+
+  this.map = new google.maps.Map($('#map_canvas')[0], myOptions);
+  hitmap.map.setOptions( {disableDefaultUI: true} );
+
+  this.bounds = new google.maps.LatLngBounds();
+  this.mgr = new MarkerManager(hitmap.map);
+  //this.mgr = new MarkerClusterer(hitmap.map);
+  //this.heatmap = new HeatmapOverlay(hitmap.map, {"radius":15, "visible":true, "opacity":60});
+
+  this.data = new Array();
+  var messagewindow = document.createElement('DIV');
+  messagewindow.id = 'messagewindow';
+  google.maps.event.addDomListener(messagewindow, 'click', function() {
+    $(messagewindow).animate({
+    width: "70%",
+  }, 500 );
+  });
+  var logo = document.createElement('IMG');
+  logo.style.height = '70px';
+  logo.style.width = '70px';
+  logo.style.float = 'left';
+  logo.src = 'http://a0.twimg.com/profile_images/74182282/logo_colours_400px_crop.jpg';
+  
+  messagewindow.appendChild(logo);
+//  var message = document.createElement('P');
+//  message.innerText = "This is a message";
+//  messagewindow.appendChild(message);
+  
+  hitmap.map.controls[google.maps.ControlPosition.TOP_LEFT].push(messagewindow);
+
+  var panoramio = document.createElement('DIV');
+  panoramio.id = 'panoramio';
+  hitmap.map.controls[google.maps.ControlPosition.LEFT_CENTER].push(panoramio);
+
+  var panoramioUrl = 'http://www.panoramio.com/map/get_panoramas.php?set=public&from=0&to=20&minx=-180&miny=-90&maxx=180&maxy=90&size=medium&mapfilter=true&callback=setPanoramio';
+  
+  google.maps.event.addListener(this.mgr, 'loaded', function(){
+
+    hitmap.socket = io.connect();
+    hitmap.socket.on('m', function(data){
+      if ('buffer' in data){
+        for (var i in data.buffer) hitmap.addmarker(data.buffer[i]);
+      } else {
+        hitmap.addmarker(data);
+      }
+    });
+    hitmap.socket.on('graphdata', function(data){
+      if (hitmap.data.length == 0 && 'buffer' in data){
+        for (var i in data.buffer) {
+          addChartData(data.buffer[i]);
+        }
+        hitmap.updatechart();
+      } else {
+        addChartData(data);
+        hitmap.updatechart();
+      }
+    });
+    addChart();
+    hitmap.socket.on('connect', function(){
+      $("#map_canvas").stop().fadeTo(500, 1);
+    });
+    hitmap.socket.on('disconnect', function(){
+      $("#map_canvas").stop().fadeTo(1000, 0.5);
+    });
+    hitmap.socket.on('reconnecting', function(reconnectionDelay,reconnectionAttempts){
+      console.log('delay: ' + reconnectionDelay + ' attempts: ' + reconnectionAttempts);
+      $("#map_canvas").stop().fadeTo(1000, 0.5);
+    });
+    hitmap.socket.on('reconnect_failed', function(){
+      $("#map_canvas").stop().fadeTo(1000, 0.2);
+    });
+  });
+}
+
+function addChartData(data) {
+  if(hitmap.data.length >= 300) hitmap.data.shift();
+
+  //Timezone correction
+  data[0] -= hitmap.timezoneoffset;
+
+  hitmap.data.push(data);
+}
+
+function addChart() {
+    var livechart = document.createElement('div');
+    livechart.id = 'livechart'
+    livechart.style.width = '100%';
+    livechart.style.height = '100px';
+    livechart.style.margin = '25px';
+    google.maps.event.addListenerOnce(hitmap.map, 'idle', startStream);
+    hitmap.map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(livechart);
+}
+
+function startStream() {
+    var totalPoints = 300;
+
+    // setup plot
+    var options = {
+        grid: { 
+          borderWidth: 0,
+        },
+        series: {
+          lines: { lineWidth: 2, fill: true, fillColor: "rgba(0, 0, 0, 0.1)" },
+        },
+        yaxis: { min: 0 },
+        xaxis: { mode: "time" },
+        colors: ["rgba(0, 0, 0, 0.1)"]
+    };
+    hitmap.plot = $.plot($("#livechart"), hitmap.data, options);
+}
+
+hitmap.updatechart = function() {
+  hitmap.plot.setData([ hitmap.data ]);
+  hitmap.plot.setupGrid();
+  hitmap.plot.draw();
+}
+
+hitmap.addmarker = function(data) {
+  if(data.lat && data.lng) {
+  // create a new LatLng point for the marker
+    var point = new google.maps.LatLng(data.lat,data.lng);
+    var icon = 'http://g.etfv.co/' + data.r;
+    var marker = new google.maps.Marker({
+      position: point,
+      zIndex: data.t,
+      icon: icon,
+    });
+    hitmap.mgr.addMarker(marker, 0);
+    window.setTimeout(function() {
+      hitmap.mgr.removeMarker(marker);
+    }, 10000);
+    //hitmap.heatmap.addDataPoint(data.lat,data.lng,1);
+  }
+}
+
+$(document).ready(function(){
+  hitmap.init();
+});

@@ -1,0 +1,13 @@
+{ "name" : "map",
+  "version" : "0.1.0",
+  "description" : "Show website visitors on a map",
+  "author" : "Ben Verhees",
+  "main" : "./server.js",
+  "dependencies": {
+    "http-proxy": "0.x.x",
+    "express": "2.x.x",
+    "jade": "0.x.x",
+    "geoip": "0.x.x",
+    "socket.io": "0.x.x"
+  }
+}
