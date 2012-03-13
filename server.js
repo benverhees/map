@@ -104,7 +104,7 @@ function getRandomInRange(from, to, exclude, fixed) {
     // .toFixed() returns string, so ' * 1' is a trick to convert to number
 }
 
-app.listen(80);
+app.listen(15623);
 
 var io = io.listen(app)
   , buffer = [];
