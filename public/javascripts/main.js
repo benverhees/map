@@ -203,7 +203,7 @@ hitmap.addmarker = function(data) {
     var marker = new google.maps.Marker({
       position: point,
       zIndex: data.t,
-      icon: icon,
+      icon: new google.maps.MarkerImage(icon, null, null, null, new google.maps.Size(16, 16)),
     });
     hitmap.mgr.addMarker(marker, 0);
     if(data.i.src) {
