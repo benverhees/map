@@ -8,6 +8,8 @@
     "express": "2.x.x",
     "jade": "0.x.x",
     "geoip": "0.x.x",
-    "socket.io": "0.x.x"
+    "socket.io": "0.x.x",
+//    "phantom": "0.x.x",
+    "async": "0.x.x"
   }
 }

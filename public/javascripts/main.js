@@ -19,10 +19,9 @@ hitmap.init = function() {
 
   $("#map_canvas").fadeTo(1, 0.2);
 
-  var myLatlng = new google.maps.LatLng(32, 5);
   var myOptions = {
     zoom: 3,
-    center: myLatlng,
+    center: new google.maps.LatLng(32, 5),
     mapTypeId: google.maps.MapTypeId.ROADMAP,
     styles: 
     [
@@ -62,9 +61,15 @@ hitmap.init = function() {
   }
 
   this.map = new google.maps.Map($('#map_canvas')[0], myOptions);
+
   hitmap.map.setOptions( {disableDefaultUI: true} );
 
-  this.bounds = new google.maps.LatLngBounds();
+  hitmap.bounds = new google.maps.LatLngBounds(new google.maps.LatLng(50.750, 3.133), new google.maps.LatLng(53.683, 7.217));
+  hitmap.map.fitBounds(hitmap.bounds);
+  $(window).resize(function() {
+    hitmap.map.fitBounds(hitmap.bounds);
+  });
+
   this.mgr = new MarkerManager(hitmap.map);
   //this.mgr = new MarkerClusterer(hitmap.map);
   //this.heatmap = new HeatmapOverlay(hitmap.map, {"radius":15, "visible":true, "opacity":60});
@@ -91,15 +96,6 @@ hitmap.init = function() {
   
   hitmap.map.controls[google.maps.ControlPosition.TOP_LEFT].push(messagewindow);
   addChart();
-
-  hitmap.panoramioBlock = document.createElement('DIV');
-  hitmap.panoramioBlock.id = 'panoramio';
-  hitmap.imageLink = document.createElement('A');
-  hitmap.imageLink.target = '_blank';
-  hitmap.panoramioBlock.appendChild(hitmap.imageLink);
-  hitmap.image = document.createElement('IMG');
-  hitmap.imageLink.appendChild(hitmap.image);
-  hitmap.map.controls[google.maps.ControlPosition.LEFT_BOTTOM].push(hitmap.panoramioBlock);
 
   google.maps.event.addListener(this.mgr, 'loaded', function(){
 
@@ -149,7 +145,7 @@ function addChartData(data) {
     hitmap.data.push(data);
     startStream();
   }else{
-    hitmap.data.push(data);    
+    hitmap.data.push(data);
   }
 }
 
@@ -159,7 +155,6 @@ function addChart() {
     livechart.style.width = '100%';
     livechart.style.height = '100px';
     livechart.style.margin = '25px';
-    //google.maps.event.addListenerOnce(hitmap.map, 'idle', startStream);
     hitmap.map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(livechart);
 }
 
@@ -168,15 +163,23 @@ function startStream() {
 
     // setup plot
     var options = {
+        valueLabels: {
+          show: true
+        },
         grid: { 
           borderWidth: 0,
         },
         series: {
-          lines: { lineWidth: 2, fill: true, fillColor: "rgba(0, 0, 0, 0.1)" },
+          lines: { show: true, lineWidth: 2, fill: true, fillColor: "rgba(0, 0, 0, 0.1)" },
         },
-        yaxis: { min: 0 },
-        xaxis: { mode: "time" },
-        colors: ["rgba(0, 0, 0, 0.1)"]
+        yaxis: { min: 0,
+          minTickSize: 1,
+          tickDecimals: 0
+        },
+        xaxis: { mode: "time",
+          minTickSize: [1, "minute"],
+        },
+        colors: ["rgba(0, 0, 0, 0.1)"],
     };
     hitmap.plot = $.plot($("#livechart"), hitmap.data, options);
 }
@@ -193,6 +196,9 @@ hitmap.addmarker = function(data) {
   if(data.lat && data.lng) {
   // create a new LatLng point for the marker
     var point = new google.maps.LatLng(data.lat,data.lng);
+    //this.bounds.extend(point);
+    //hitmap.map.fitBounds(this.bounds);
+
     var icon = 'http://g.etfv.co/' + data.r;
     var marker = new google.maps.Marker({
       position: point,
@@ -200,6 +206,9 @@ hitmap.addmarker = function(data) {
       icon: icon,
     });
     hitmap.mgr.addMarker(marker, 0);
+    if(data.i.src) {
+      showPhoto(data.i);
+    }
     window.setTimeout(function() {
       hitmap.mgr.removeMarker(marker);
     }, 300000);
@@ -212,33 +221,28 @@ hitmap.addmarker = function(data) {
     /** checkNearestStreetView is a valid callback function **/
 
 //    webService.getPanoramaByLocation(astorPlace,checkaround ,checkNearestStreetView);
-    if(data.p == 'city') {
-      var scriptTag = document.createElement('script');
-      scriptTag.src = 'http://www.panoramio.com/map/get_panoramas.php' +
-        '?order=popularity&set=public&from=0&to=24&minx=' + (data.lng - 0.01) +
-        '&miny=' + (data.lat - 0.01) + '&maxx=' + (data.lng + 0.01) +
-        '&maxy=' + (data.lat + 0.01) + '&callback=showPhotos&size=small&mapfilter=true';
-      scriptTag.type = 'text/javascript';
-      document.getElementsByTagName('head')[0].appendChild(scriptTag);
-    }
   }
 }
 
-function showPhotos(photosJSON) {
-  if (photosJSON.photos.length > 0) {
-    try {
-      var index = Math.floor(Math.random()*photosJSON.photos.length)
-      //console.log(photosJSON.photos[index]);
-//      hitmap.panoramioBlock.removeChild(hitmap.image);      
-      hitmap.image.src = photosJSON.photos[index].photo_file_url;
-      hitmap.imageLink.href = photosJSON.photos[index].photo_url;
-//      hitmap.panoramioBlock.appendChild(hitmap.image);
-    }catch(e){
-      //console.log('Error: ');
-      //console.log(e);
-      //console.log(photosJSON);
-    }
+function showPhoto(image) {
+  var index = hitmap.map.controls[google.maps.ControlPosition.LEFT_CENTER].getArray().indexOf(hitmap.panoramioBlock);
+  console.log("Index: " + index);
+  if(index >= 0) {
+    hitmap.map.controls[google.maps.ControlPosition.LEFT_CENTER].removeAt(hitmap.map.controls[google.maps.ControlPosition.LEFT_CENTER].getArray().indexOf(hitmap.panoramioBlock));
   }
+  hitmap.panoramioBlock = document.createElement('DIV');
+  hitmap.panoramioBlock.id = 'panoramio';
+  var imageLink = document.createElement('A');
+  imageLink.href = image.url;
+  var imageElement = document.createElement('IMG');
+  imageElement.src = image.src;
+  imageElement.width = image.width;
+  imageElement.height = image.height;
+  imageElement.style.boxShadow = '5px 5px 10px rgba(0,0,0,0.3)';
+  imageLink.appendChild(imageElement);
+  hitmap.panoramioBlock.appendChild(imageLink);
+
+  hitmap.map.controls[google.maps.ControlPosition.LEFT_CENTER].push(hitmap.panoramioBlock);
 }
 
 function checkNearestStreetView(panoData){
@@ -248,8 +252,7 @@ function checkNearestStreetView(panoData){
 
           if(panoData.location.latLng){
             /**Well done you can use a nearest existing street viewcoordinates**/
-            var imageUrl = 'http://maps.googleapis.com/maps/api/streetview?size=600x300&location=' + panoData.location.latLng.toUrlValue() + '&heading=' + panoData.links[1].heading + 
-'pitch=-10&sensor=false';
+            var imageUrl = 'http://maps.googleapis.com/maps/api/streetview?size=600x300&location=' + panoData.location.latLng.toUrlValue() + '&heading=' + panoData.links[1].heading + 'pitch=-10&sensor=false';
             //console.log(imageUrl);
           }
         }
