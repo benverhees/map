@@ -145,7 +145,11 @@ app.get('/b.js', function(req, res, next){
                   if(panoramio.photos.length > 0) {
                     var index = Math.floor(Math.random()*panoramio.photos.length)
                     //images.push(panoramio.photos[index].photo_file_url.replace('medium', 'mini_square'));
+                    console.log(panoramio.photos[index]);
                     callback(null, {
+                      title: panoramio.photos[index].photo_title,
+                      lat: panoramio.photos[index].latitude,
+                      lng: panoramio.photos[index].longitude,
                       src: panoramio.photos[index].photo_file_url,
                       url: panoramio.photos[index].photo_url,
                       width: panoramio.photos[index].width,

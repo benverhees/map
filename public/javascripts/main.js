@@ -11,6 +11,7 @@ var hitmap = {
   panoramioBlock: null,
   imageLink: null,
   image: null,
+  geocoder: null,
 }
 
 hitmap.init = function() {
@@ -61,6 +62,7 @@ hitmap.init = function() {
   }
 
   this.map = new google.maps.Map($('#map_canvas')[0], myOptions);
+  this.geocoder = new google.maps.Geocoder();
 
   hitmap.map.setOptions( {disableDefaultUI: true} );
 
@@ -226,7 +228,6 @@ hitmap.addmarker = function(data) {
 
 function showPhoto(image) {
   var index = hitmap.map.controls[google.maps.ControlPosition.LEFT_CENTER].getArray().indexOf(hitmap.panoramioBlock);
-  console.log("Index: " + index);
   if(index >= 0) {
     hitmap.map.controls[google.maps.ControlPosition.LEFT_CENTER].removeAt(hitmap.map.controls[google.maps.ControlPosition.LEFT_CENTER].getArray().indexOf(hitmap.panoramioBlock));
   }
@@ -241,8 +242,20 @@ function showPhoto(image) {
   imageElement.style.boxShadow = '5px 5px 10px rgba(0,0,0,0.3)';
   imageLink.appendChild(imageElement);
   hitmap.panoramioBlock.appendChild(imageLink);
-
+  var imageTitle = document.createElement('P');
+  imageTitle.innerText = image.title;
+  imageTitle.style.paddingLeft = '5px';
+  hitmap.panoramioBlock.appendChild(imageTitle);
   hitmap.map.controls[google.maps.ControlPosition.LEFT_CENTER].push(hitmap.panoramioBlock);
+  var lat = parseFloat(image.lat);
+  var lng = parseFloat(image.lng);
+  var latLng = new google.maps.LatLng(lat, lng);
+/*  hitmap.geocoder.geocode( { 'latLng': latLng}, function(results, status) {
+    if (status == google.maps.GeocoderStatus.OK) {
+      console.log(results);
+    }
+  });
+*/
 }
 
 function checkNearestStreetView(panoData){
