@@ -82,7 +82,7 @@ app.get('/b.js', function(req, res, next){
           precision = 'country';
         }
 
-        var hit = {'t': timestamp, 'lat': data.latitude, 'lng': data.longitude, 'r': referrer, 'p': precision, 'i': null };
+        var hit = {'t': timestamp, 'lat': data.latitude, 'lng': data.longitude, 'city': data.city, 'ctry': data.country_name, 'r': referrer, 'p': precision, 'i': null };
 
         //api.snapito.com/free/lc?url=www.colours.nl
         //icon url parameter ipv referrer favicon
@@ -145,9 +145,15 @@ app.get('/b.js', function(req, res, next){
                   if(panoramio.photos.length > 0) {
                     var index = Math.floor(Math.random()*panoramio.photos.length)
                     //images.push(panoramio.photos[index].photo_file_url.replace('medium', 'mini_square'));
-                    console.log(panoramio.photos[index]);
+                    var photo_title = panoramio.photos[index].photo_title;
+                    var photo_location = new Array();
+                    (photo_title.indexOf(data.city) == -1) && (photo_location.push(data.city));
+                    (photo_title.indexOf(data.country_name) == -1) && (photo_location.push(data.country_name));
+                    if(photo_location.length > 0) {
+                      photo_title += ' (' + photo_location.join(', ') + ')';
+                    }
                     callback(null, {
-                      title: panoramio.photos[index].photo_title,
+                      title: photo_title,
                       lat: panoramio.photos[index].latitude,
                       lng: panoramio.photos[index].longitude,
                       src: panoramio.photos[index].photo_file_url,
