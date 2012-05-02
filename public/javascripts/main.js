@@ -208,7 +208,7 @@ hitmap.addmarker = function(data) {
       icon: new google.maps.MarkerImage(icon, null, null, null, new google.maps.Size(16, 16)),
     });
     hitmap.mgr.addMarker(marker, 0);
-    if(data.i.src) {
+    if(data.i && data.i.src) {
       showPhoto(data.i);
     }
     window.setTimeout(function() {
