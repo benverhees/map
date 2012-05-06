@@ -1,0 +1,16 @@
+!!! 5
+html
+  head
+    title Hitmap remote
+    meta(name='viewport', content='initial-scale=1.0, user=scalable=no')
+    link(rel='stylesheet', href='/stylesheets/style.css')
+    script(src= '/socket.io/socket.io.js');
+    script(src= '/javascripts/jquery-1.6.4.min.js')
+    script(src= '/javascripts/json.js')
+    block scripts
+      script(src= 'http://maps.googleapis.com/maps/api/js?key=AIzaSyAfxbXw3RjIU79F64DmhSr3A0O7Y6d_Aec&sensor=false')
+      script(src= 'https://www.google.com/jsapi')
+      script(src= '/javascripts/remote.js')
+  body
+    #map_canvas(style='width:100%; height:100%')
+

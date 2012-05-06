@@ -90,8 +90,8 @@ hitmap.init = function() {
   logo.style.width = '70px';
   logo.style.float = 'left';
   logo.src = 'https://twimg0-a.akamaihd.net/profile_images/74182282/logo_colours_400px_crop.jpg';
-  
   messagewindow.appendChild(logo);
+  
 //  var message = document.createElement('P');
 //  message.innerText = "This is a message";
 //  messagewindow.appendChild(message);
@@ -122,6 +122,23 @@ hitmap.init = function() {
     });
     hitmap.socket.on('connect', function(){
       $("#map_canvas").stop().fadeTo(500, 1);
+
+      var index = hitmap.map.controls[google.maps.ControlPosition.TOP_RIGHT].getArray().indexOf($('#qrcode').get()[0]);
+      if(index >= 0) {
+        hitmap.map.controls[google.maps.ControlPosition.TOP_RIGHT].removeAt(index);
+      }
+
+      var remoteUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + 'remote';
+      var qrcode = document.createElement('IMG');
+      qrcode.id = 'qrcode';
+      qrcode.src = 'https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl=' + encodeURIComponent(remoteUrl);
+      hitmap.map.controls[google.maps.ControlPosition.TOP_RIGHT].push(qrcode);
+
+    });
+    hitmap.socket.on('bounds_changed', function(bounds) {
+      var bounds = bounds.split(',');
+      var latLngBounds = new google.maps.LatLngBounds(new google.maps.LatLng(bounds[0], bounds[1]), new google.maps.LatLng(bounds[2], bounds[3]));
+      hitmap.map.fitBounds(latLngBounds);
     });
     hitmap.socket.on('disconnect', function(){
       $("#map_canvas").stop().fadeTo(1000, 0.5);

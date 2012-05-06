@@ -54,6 +54,15 @@ app.get('/', function(req, res){
   });
 });
 
+app.get('/remote', function(req, res){
+  res.render('remote', {
+    layout: false,
+    locals: {
+      title: 'Remote'
+    }
+  });
+});
+
 app.get('/b.js', function(req, res, next){
   var timestamp = new Date().getTime();
 
@@ -206,6 +215,9 @@ io.sockets.on('connection', function (socket) {
   if(hitbuffer) {
     socket.emit('graphdata', { buffer: hitbuffer} );
   }
+  socket.on('bounds_changed', function (bounds) {
+    io.sockets.emit('bounds_changed', bounds);
+  });
 });
 
 io.configure(function(){
