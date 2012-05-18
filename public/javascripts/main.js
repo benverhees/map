@@ -24,19 +24,37 @@ hitmap.init = function() {
     zoom: 3,
     center: new google.maps.LatLng(32, 5),
     mapTypeId: google.maps.MapTypeId.ROADMAP,
-    styles: 
+    styles:
     [
       {
+        featureType: "road",
         stylers: [
           { visibility: "off" }
         ]
       },{
         featureType: "water",
-        elementType: "geometry",
         stylers: [
           { visibility: "on" },
+          { lightness: 40 },
+          { saturation: -100 }
+        ]
+      },{
+        featureType: "transit",
+        stylers: [
+          { visibility: "off" }
+        ]
+      },{
+        featureType: "poi",
+        stylers: [
+          { visibility: "off" }
+        ]
+      },{
+        featureType: "landscape",
+        elementType: "geometry",
+        stylers: [
           { saturation: -100 },
-          { lightness: 40 }
+          { visibility: "on" },
+          { lightness: 100 }
         ]
       },{
         featureType: "administrative",
@@ -45,20 +63,20 @@ hitmap.init = function() {
           { visibility: "off" }
         ]
       },{
+        featureType: "water",
+        elementType: "labels",
+        stylers: [
+          { visibility: "off" }
+        ]
+      },{
         featureType: "administrative",
         elementType: "geometry",
         stylers: [
-          { visibility: "on" },
           { saturation: -100 },
           { lightness: 75 }
         ]
-      },{
-        featureType: "landscape",
-        stylers: [
-          { lightness: 100 }
-        ]
       }
-    ]
+    ] 
   }
 
   this.map = new google.maps.Map($('#map_canvas')[0], myOptions);
